@@ -2,7 +2,9 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/rrebeiz/quicktasks/internal/data"
+	"github.com/rrebeiz/quicktasks/internal/validator"
 	"net/http"
 )
 
@@ -17,8 +19,7 @@ func (app *application) getTaskHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	// get the id from the DB
-	// for now just print it out
+
 	task, err := app.models.Tasks.GetTaskByID(r.Context(), id)
 	if err != nil {
 		switch {
@@ -35,4 +36,51 @@ func (app *application) getTaskHandler(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
+}
+
+func (app *application) createTaskHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Title       string `json:"title"`
+		Description string `json:"description"`
+		Completed   bool   `json:"completed"`
+	}
+
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	v := validator.NewValidator()
+
+	task := &data.Task{
+		Title:       input.Title,
+		Description: input.Description,
+	}
+
+	data.ValidateTask(v, task)
+
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	err = app.models.Tasks.CreateTask(r.Context(), task)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	headers := make(http.Header)
+
+	location := fmt.Sprintf("/v1/tasks/%d", task.ID)
+
+	headers.Set("Location", location)
+
+	err = app.writeJSON(w, envelope{"task": task}, http.StatusCreated, headers)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
 }

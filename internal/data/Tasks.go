@@ -4,11 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/rrebeiz/quicktasks/internal/validator"
 	"time"
 )
 
 type Tasks interface {
 	GetTaskByID(ctx context.Context, id int64) (*Task, error)
+	CreateTask(ctx context.Context, task *Task) error
 }
 type Task struct {
 	ID          int64     `json:"id"`
@@ -45,4 +47,21 @@ func (t TaskModel) GetTaskByID(ctx context.Context, id int64) (*Task, error) {
 		}
 	}
 	return &task, nil
+}
+
+func (t TaskModel) CreateTask(ctx context.Context, task *Task) error {
+	query := `insert into tasks (title, description, completed) VALUES ($1, $2, $3) returning id, version`
+	args := []any{task.Title, task.Description, task.Completed}
+
+	err := t.DB.QueryRowContext(ctx, query, args...).Scan(&task.ID, &task.Version)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ValidateTask(v *validator.Validator, task *Task) {
+	v.Check(task.Title != "", "title", "should not be empty")
+	v.Check(task.Description != "", "description", "should not be empty")
 }
