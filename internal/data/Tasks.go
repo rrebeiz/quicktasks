@@ -11,6 +11,7 @@ import (
 type Tasks interface {
 	GetTaskByID(ctx context.Context, id int64) (*Task, error)
 	CreateTask(ctx context.Context, task *Task) error
+	UpdateTask(ctx context.Context, task *Task) error
 }
 type Task struct {
 	ID          int64     `json:"id"`
@@ -34,9 +35,9 @@ func (t TaskModel) GetTaskByID(ctx context.Context, id int64) (*Task, error) {
 	if id < 1 {
 		return nil, ErrRecordNotFound
 	}
-	query := `select id, title, description, completed from tasks where id = $1`
+	query := `select id, title, description, completed, version from tasks where id = $1`
 	var task Task
-	err := t.DB.QueryRowContext(ctx, query, id).Scan(&task.ID, &task.Title, &task.Description, &task.Completed)
+	err := t.DB.QueryRowContext(ctx, query, id).Scan(&task.ID, &task.Title, &task.Description, &task.Completed, &task.Version)
 
 	if err != nil {
 		switch {
@@ -57,6 +58,22 @@ func (t TaskModel) CreateTask(ctx context.Context, task *Task) error {
 
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (t TaskModel) UpdateTask(ctx context.Context, task *Task) error {
+	query := `update tasks set title = $1, description = $2, completed = $3, version = version + 1 where id = $4 and version = $5 returning version`
+	args := []any{task.Title, task.Description, task.Completed, task.ID, task.Version}
+	err := t.DB.QueryRowContext(ctx, query, args...).Scan(&task.Version)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
+		}
 	}
 	return nil
 }

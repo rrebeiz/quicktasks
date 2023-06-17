@@ -32,3 +32,10 @@ func (t TaskMockModel) CreateTask(ctx context.Context, task *Task) error {
 	}
 	return errors.New("something went wrong")
 }
+
+func (t TaskMockModel) UpdateTask(ctx context.Context, task *Task) error {
+	if task.ID == 1 {
+		return nil
+	}
+	return ErrEditConflict
+}

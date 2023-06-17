@@ -84,3 +84,77 @@ func (app *application) createTaskHandler(w http.ResponseWriter, r *http.Request
 	}
 
 }
+
+func (app *application) updateTaskHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.getParamID(r)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrInvalidIDParam):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	var input struct {
+		Title       *string `json:"title"`
+		Description *string `json:"description"`
+		Completed   *bool   `json:"completed"`
+	}
+	err = app.readJSON(w, r, &input)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	v := validator.NewValidator()
+
+	task, err := app.models.Tasks.GetTaskByID(r.Context(), id)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	if input.Title != nil {
+		v.Check(*input.Title != "", "title", "should not be empty")
+		task.Title = *input.Title
+	}
+	if input.Description != nil {
+		v.Check(*input.Description != "", "description", "should not be empty")
+		task.Description = *input.Description
+	}
+
+	if input.Completed != nil {
+		task.Completed = *input.Completed
+	}
+
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	err = app.models.Tasks.UpdateTask(r.Context(), task)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrEditConflict):
+			app.editConflictResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.writeJSON(w, envelope{"task": task}, http.StatusOK, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+}

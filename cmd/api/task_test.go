@@ -63,3 +63,33 @@ func TestApp_CreateTaskHandler(t *testing.T) {
 		}
 	}
 }
+
+func TestApp_UpdateTaskHandler(t *testing.T) {
+	tests := []struct {
+		name               string
+		id                 string
+		body               string
+		expectedStatusCode int
+		expectedBody       string
+	}{
+		{"valid test", "1", `{"title":"New Test", "description":"New Description", "completed":true}`, http.StatusOK, "{\"task\":{\"id\":1,\"title\":\"New Test\",\"description\":\"New Description\",\"completed\":true}}\n"},
+		{"invalid test: body set but empty", "1", `{"title":"", "description":""}`, http.StatusUnprocessableEntity, "{\"error\":{\"description\":\"should not be empty\",\"title\":\"should not be empty\"}}\n"},
+	}
+
+	for _, e := range tests {
+		req, _ := http.NewRequest("PATCH", "/v1/tasks/1", strings.NewReader(e.body))
+		chiCtx := chi.NewRouteContext()
+		chiCtx.URLParams.Add("id", e.id)
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, chiCtx))
+		rr := httptest.NewRecorder()
+		handler := http.HandlerFunc(testApp.updateTaskHandler)
+		handler.ServeHTTP(rr, req)
+
+		if e.expectedStatusCode != rr.Code {
+			t.Errorf("%s: expected %d but got %d", e.name, e.expectedStatusCode, rr.Code)
+		}
+		if e.expectedBody != rr.Body.String() {
+			t.Errorf("%s: expected %s but got %s", e.name, e.expectedBody, rr.Body.String())
+		}
+	}
+}

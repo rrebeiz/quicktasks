@@ -11,6 +11,7 @@ func (app *application) routes() http.Handler {
 
 	router.Get("/v1/tasks/{id}", app.getTaskHandler)
 	router.Post("/v1/tasks", app.createTaskHandler)
+	router.Patch("/v1/tasks/{id}", app.updateTaskHandler)
 
 	return router
 }
