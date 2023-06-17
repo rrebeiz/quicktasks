@@ -9,5 +9,7 @@ func (app *application) routes() http.Handler {
 	router := chi.NewRouter()
 	router.Get("/healthcheck", app.healthcheckHandler)
 
+	router.Get("/v1/tasks/{id}", app.getTaskHandler)
+
 	return router
 }
