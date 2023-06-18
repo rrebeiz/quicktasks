@@ -156,5 +156,48 @@ func (app *application) updateTaskHandler(w http.ResponseWriter, r *http.Request
 		app.serverErrorResponse(w, r, err)
 		return
 	}
+}
 
+func (app *application) deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.getParamID(r)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrInvalidIDParam):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	task, err := app.models.Tasks.GetTaskByID(r.Context(), id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.models.Tasks.DeleteTask(r.Context(), task)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	message := fmt.Sprintf("task with ID %d deleted", task.ID)
+
+	err = app.writeJSON(w, envelope{"success": message}, http.StatusOK, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 }

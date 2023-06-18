@@ -39,3 +39,10 @@ func (t TaskMockModel) UpdateTask(ctx context.Context, task *Task) error {
 	}
 	return ErrEditConflict
 }
+
+func (t TaskMockModel) DeleteTask(ctx context.Context, task *Task) error {
+	if task.ID == 1 {
+		return nil
+	}
+	return ErrRecordNotFound
+}

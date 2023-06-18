@@ -17,6 +17,8 @@ func TestApp_GetTaskByIDHandler(t *testing.T) {
 		expectedBody       string
 	}{
 		{"valid test", "1", http.StatusOK, "{\"task\":{\"id\":1,\"title\":\"Test Title\",\"description\":\"Test Description\",\"completed\":false}}\n"},
+		{"invalid test missing id", "", http.StatusNotFound, "{\"error\":\"the requested resource could not be found\"}\n"},
+		{"invalid test invalid id", "abc", http.StatusNotFound, "{\"error\":\"the requested resource could not be found\"}\n"},
 	}
 	for _, e := range tests {
 		req, _ := http.NewRequest("GET", "/v1/tasks/1", nil)
@@ -88,6 +90,38 @@ func TestApp_UpdateTaskHandler(t *testing.T) {
 		if e.expectedStatusCode != rr.Code {
 			t.Errorf("%s: expected %d but got %d", e.name, e.expectedStatusCode, rr.Code)
 		}
+		if e.expectedBody != rr.Body.String() {
+			t.Errorf("%s: expected %s but got %s", e.name, e.expectedBody, rr.Body.String())
+		}
+	}
+}
+
+func TestApp_DeleteTaskHandler(t *testing.T) {
+	tests := []struct {
+		name               string
+		id                 string
+		expectedStatusCode int
+		expectedBody       string
+	}{
+		{"valid test", "1", http.StatusOK, "{\"success\":\"task with ID 1 deleted\"}\n"},
+		{"invalid test missing id", "", http.StatusNotFound, "{\"error\":\"the requested resource could not be found\"}\n"},
+		{"invalid test invalid id", "abc", http.StatusNotFound, "{\"error\":\"the requested resource could not be found\"}\n"},
+	}
+	for _, e := range tests {
+		req, _ := http.NewRequest("DELETE", "/v1/tasks/1", nil)
+		//if e.id != "" {
+		chiCtx := chi.NewRouteContext()
+		chiCtx.URLParams.Add("id", e.id)
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, chiCtx))
+		//}
+		rr := httptest.NewRecorder()
+		handler := http.HandlerFunc(testApp.deleteTaskHandler)
+		handler.ServeHTTP(rr, req)
+
+		if e.expectedStatusCode != rr.Code {
+			t.Errorf("%s: expected %d but got %d", e.name, e.expectedStatusCode, rr.Code)
+		}
+
 		if e.expectedBody != rr.Body.String() {
 			t.Errorf("%s: expected %s but got %s", e.name, e.expectedBody, rr.Body.String())
 		}
