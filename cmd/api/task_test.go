@@ -127,3 +127,26 @@ func TestApp_DeleteTaskHandler(t *testing.T) {
 		}
 	}
 }
+
+func TestApp_GetAllTasks(t *testing.T) {
+	tests := []struct {
+		name               string
+		expectedStatusCode int
+		expectedStatusBody string
+	}{
+		{"valid test", http.StatusOK, "{\"tasks\":[{\"id\":1,\"title\":\"Test Task\",\"description\":\"Test Description\",\"completed\":false}]}\n"},
+	}
+	for _, e := range tests {
+		req, _ := http.NewRequest("GET", "/v1/tasks", nil)
+		rr := httptest.NewRecorder()
+		handler := http.HandlerFunc(testApp.getAllTasks)
+		handler.ServeHTTP(rr, req)
+
+		if e.expectedStatusCode != rr.Code {
+			t.Errorf("%s: expected %d but got %d", e.name, e.expectedStatusCode, rr.Code)
+		}
+		if e.expectedStatusBody != rr.Body.String() {
+			t.Errorf("%s: expected %s but got %s", e.name, e.expectedStatusBody, rr.Body.String())
+		}
+	}
+}

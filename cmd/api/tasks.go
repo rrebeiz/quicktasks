@@ -38,6 +38,19 @@ func (app *application) getTaskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *application) getAllTasks(w http.ResponseWriter, r *http.Request) {
+	tasks, err := app.models.Tasks.GetAllTasks(r.Context())
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	err = app.writeJSON(w, envelope{"tasks": tasks}, http.StatusOK, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+}
+
 func (app *application) createTaskHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Title       string `json:"title"`

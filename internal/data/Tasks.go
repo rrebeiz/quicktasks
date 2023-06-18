@@ -9,6 +9,7 @@ import (
 )
 
 type Tasks interface {
+	GetAllTasks(ctx context.Context) ([]*Task, error)
 	GetTaskByID(ctx context.Context, id int64) (*Task, error)
 	CreateTask(ctx context.Context, task *Task) error
 	UpdateTask(ctx context.Context, task *Task) error
@@ -30,6 +31,25 @@ type TaskModel struct {
 
 func NewTaskModel(db *sql.DB) TaskModel {
 	return TaskModel{DB: db}
+}
+
+func (t TaskModel) GetAllTasks(ctx context.Context) ([]*Task, error) {
+	query := `select id, title, description, completed from tasks`
+	var tasks []*Task
+	rows, err := t.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var task Task
+		err = rows.Scan(&task.ID, &task.Title, &task.Description, &task.Completed)
+		if err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, &task)
+	}
+	return tasks, nil
 }
 
 func (t TaskModel) GetTaskByID(ctx context.Context, id int64) (*Task, error) {

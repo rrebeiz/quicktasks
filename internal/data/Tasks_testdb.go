@@ -46,3 +46,15 @@ func (t TaskMockModel) DeleteTask(ctx context.Context, task *Task) error {
 	}
 	return ErrRecordNotFound
 }
+
+func (t TaskMockModel) GetAllTasks(ctx context.Context) ([]*Task, error) {
+	var tasks []*Task
+	tasks = append(tasks, &Task{
+		ID:          1,
+		Title:       "Test Task",
+		Description: "Test Description",
+		Completed:   false,
+		Version:     1,
+	})
+	return tasks, nil
+}

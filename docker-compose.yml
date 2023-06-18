@@ -10,4 +10,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: go_tasks
     volumes:
-      - './db-data/postgres/:/var/lib/postgresql/data'
+      - go_tasksDB:/var/lib/postgresql/data
+
+volumes:
+  go_tasksDB:
