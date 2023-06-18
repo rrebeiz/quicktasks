@@ -19,7 +19,7 @@ type Task struct {
 	ID          int64     `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
-	Completed   bool      `json:"completed"`
+	Complete    bool      `json:"complete"`
 	Version     int       `json:"-"`
 	CreatedAt   time.Time `json:"-"`
 	UpdatedAt   time.Time `json:"-"`
@@ -34,7 +34,7 @@ func NewTaskModel(db *sql.DB) TaskModel {
 }
 
 func (t TaskModel) GetAllTasks(ctx context.Context) ([]*Task, error) {
-	query := `select id, title, description, completed from tasks`
+	query := `select id, title, description, complete from tasks`
 	var tasks []*Task
 	rows, err := t.DB.QueryContext(ctx, query)
 	if err != nil {
@@ -43,7 +43,7 @@ func (t TaskModel) GetAllTasks(ctx context.Context) ([]*Task, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var task Task
-		err = rows.Scan(&task.ID, &task.Title, &task.Description, &task.Completed)
+		err = rows.Scan(&task.ID, &task.Title, &task.Description, &task.Complete)
 		if err != nil {
 			return nil, err
 		}
@@ -56,9 +56,9 @@ func (t TaskModel) GetTaskByID(ctx context.Context, id int64) (*Task, error) {
 	if id < 1 {
 		return nil, ErrRecordNotFound
 	}
-	query := `select id, title, description, completed, version from tasks where id = $1`
+	query := `select id, title, description, complete, version from tasks where id = $1`
 	var task Task
-	err := t.DB.QueryRowContext(ctx, query, id).Scan(&task.ID, &task.Title, &task.Description, &task.Completed, &task.Version)
+	err := t.DB.QueryRowContext(ctx, query, id).Scan(&task.ID, &task.Title, &task.Description, &task.Complete, &task.Version)
 
 	if err != nil {
 		switch {
@@ -72,8 +72,8 @@ func (t TaskModel) GetTaskByID(ctx context.Context, id int64) (*Task, error) {
 }
 
 func (t TaskModel) CreateTask(ctx context.Context, task *Task) error {
-	query := `insert into tasks (title, description, completed) VALUES ($1, $2, $3) returning id, version`
-	args := []any{task.Title, task.Description, task.Completed}
+	query := `insert into tasks (title, description, complete) VALUES ($1, $2, $3) returning id, version`
+	args := []any{task.Title, task.Description, task.Complete}
 
 	err := t.DB.QueryRowContext(ctx, query, args...).Scan(&task.ID, &task.Version)
 
@@ -84,8 +84,8 @@ func (t TaskModel) CreateTask(ctx context.Context, task *Task) error {
 }
 
 func (t TaskModel) UpdateTask(ctx context.Context, task *Task) error {
-	query := `update tasks set title = $1, description = $2, completed = $3, version = version + 1 where id = $4 and version = $5 returning version`
-	args := []any{task.Title, task.Description, task.Completed, task.ID, task.Version}
+	query := `update tasks set title = $1, description = $2, complete = $3, version = version + 1 where id = $4 and version = $5 returning version`
+	args := []any{task.Title, task.Description, task.Complete, task.ID, task.Version}
 	err := t.DB.QueryRowContext(ctx, query, args...).Scan(&task.Version)
 
 	if err != nil {

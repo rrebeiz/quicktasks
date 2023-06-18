@@ -34,7 +34,7 @@ type application struct {
 func main() {
 	var cfg config
 	flag.IntVar(&cfg.port, "port", 4000, "application port")
-	flag.StringVar(&cfg.environment, "environment", "dev", "application environment dev|prod")
+	flag.StringVar(&cfg.environment, "environment", "prod", "application environment dev|prod")
 	flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("DSN"), "database data source name")
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "database max open connections")
 	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 30, "database max idle connections")

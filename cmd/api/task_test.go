@@ -16,7 +16,7 @@ func TestApp_GetTaskByIDHandler(t *testing.T) {
 		expectedStatusCode int
 		expectedBody       string
 	}{
-		{"valid test", "1", http.StatusOK, "{\"task\":{\"id\":1,\"title\":\"Test Title\",\"description\":\"Test Description\",\"completed\":false}}\n"},
+		{"valid test", "1", http.StatusOK, "{\"task\":{\"id\":1,\"title\":\"Test Title\",\"description\":\"Test Description\",\"complete\":false}}\n"},
 		{"invalid test missing id", "", http.StatusNotFound, "{\"error\":\"the requested resource could not be found\"}\n"},
 		{"invalid test invalid id", "abc", http.StatusNotFound, "{\"error\":\"the requested resource could not be found\"}\n"},
 	}
@@ -46,7 +46,7 @@ func TestApp_CreateTaskHandler(t *testing.T) {
 		expectedStatusCode int
 		expectedBody       string
 	}{
-		{"valid test", `{"title":"Test Task", "description":"Test Description", "completed":false}`, http.StatusCreated, "{\"task\":{\"id\":1,\"title\":\"Test Task\",\"description\":\"Test Description\",\"completed\":false}}\n"},
+		{"valid test", `{"title":"Test Task", "description":"Test Description", "complete":false}`, http.StatusCreated, "{\"task\":{\"id\":1,\"title\":\"Test Task\",\"description\":\"Test Description\",\"complete\":false}}\n"},
 		{"invalid test: body set but empty", `{"title":"", "description":""}`, http.StatusUnprocessableEntity, "{\"error\":{\"description\":\"should not be empty\",\"title\":\"should not be empty\"}}\n"},
 		{"invalid test: empty body", `{}`, http.StatusUnprocessableEntity, "{\"error\":{\"description\":\"should not be empty\",\"title\":\"should not be empty\"}}\n"},
 	}
@@ -74,7 +74,7 @@ func TestApp_UpdateTaskHandler(t *testing.T) {
 		expectedStatusCode int
 		expectedBody       string
 	}{
-		{"valid test", "1", `{"title":"New Test", "description":"New Description", "completed":true}`, http.StatusOK, "{\"task\":{\"id\":1,\"title\":\"New Test\",\"description\":\"New Description\",\"completed\":true}}\n"},
+		{"valid test", "1", `{"title":"New Test", "description":"New Description", "complete":true}`, http.StatusOK, "{\"task\":{\"id\":1,\"title\":\"New Test\",\"description\":\"New Description\",\"complete\":true}}\n"},
 		{"invalid test: body set but empty", "1", `{"title":"", "description":""}`, http.StatusUnprocessableEntity, "{\"error\":{\"description\":\"should not be empty\",\"title\":\"should not be empty\"}}\n"},
 	}
 
@@ -134,7 +134,7 @@ func TestApp_GetAllTasks(t *testing.T) {
 		expectedStatusCode int
 		expectedStatusBody string
 	}{
-		{"valid test", http.StatusOK, "{\"tasks\":[{\"id\":1,\"title\":\"Test Task\",\"description\":\"Test Description\",\"completed\":false}]}\n"},
+		{"valid test", http.StatusOK, "{\"tasks\":[{\"id\":1,\"title\":\"Test Task\",\"description\":\"Test Description\",\"complete\":false}]}\n"},
 	}
 	for _, e := range tests {
 		req, _ := http.NewRequest("GET", "/v1/tasks", nil)

@@ -14,6 +14,6 @@ func (app *application) serve() error {
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  10 * time.Second,
 	}
-	app.infoLog.Printf("started server on port %d\n", app.config.port)
+	app.infoLog.Printf("started server on port %d, with environment: %s\n", app.config.port, app.config.environment)
 	return srv.ListenAndServe()
 }

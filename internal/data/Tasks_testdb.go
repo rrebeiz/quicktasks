@@ -18,7 +18,7 @@ func (t TaskMockModel) GetTaskByID(ctx context.Context, id int64) (*Task, error)
 			ID:          1,
 			Title:       "Test Title",
 			Description: "Test Description",
-			Completed:   false,
+			Complete:    false,
 		}, nil
 	}
 	return nil, ErrRecordNotFound
@@ -53,7 +53,7 @@ func (t TaskMockModel) GetAllTasks(ctx context.Context) ([]*Task, error) {
 		ID:          1,
 		Title:       "Test Task",
 		Description: "Test Description",
-		Completed:   false,
+		Complete:    false,
 		Version:     1,
 	})
 	return tasks, nil

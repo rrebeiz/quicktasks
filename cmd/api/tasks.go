@@ -55,7 +55,7 @@ func (app *application) createTaskHandler(w http.ResponseWriter, r *http.Request
 	var input struct {
 		Title       string `json:"title"`
 		Description string `json:"description"`
-		Completed   bool   `json:"completed"`
+		Complete    bool   `json:"complete"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -113,7 +113,7 @@ func (app *application) updateTaskHandler(w http.ResponseWriter, r *http.Request
 	var input struct {
 		Title       *string `json:"title"`
 		Description *string `json:"description"`
-		Completed   *bool   `json:"completed"`
+		Complete    *bool   `json:"complete"`
 	}
 	err = app.readJSON(w, r, &input)
 	if err != nil {
@@ -144,8 +144,8 @@ func (app *application) updateTaskHandler(w http.ResponseWriter, r *http.Request
 		task.Description = *input.Description
 	}
 
-	if input.Completed != nil {
-		task.Completed = *input.Completed
+	if input.Complete != nil {
+		task.Complete = *input.Complete
 	}
 
 	if !v.Valid() {
