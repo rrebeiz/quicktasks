@@ -2,7 +2,8 @@
 ## Welcome to QuickTasks
 
 ### About QuickTasks
-QuickTasks is a fullstack app which allows you to create and manage your own tasks.
+QuickTasks is a fullstack app which allows you to create and manage your own tasks. <br>
+A desktop version using Fyne will also be created in the near future.
 
 ### Setup
 For the easiest and quickest setup, please install Docker then run `docker-compose up -d`. <br>
